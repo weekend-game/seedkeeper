@@ -33,4 +33,15 @@ public class Record {
 	public boolean hasDifference(Object o) {
 		return true;
 	}
+
+	public String getNormString(String string, int length) {
+
+		if (string != null)
+			string = string.trim();
+
+		if (string.length() > length)
+			string = string.substring(0, length);
+
+		return string;
+	}
 }

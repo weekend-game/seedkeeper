@@ -383,7 +383,7 @@ public abstract class Journal<T> {
 	 * Color indication field
 	 */
 	protected HBox getColorBox(ColorPicker colorPicker) {
-		Label lblName = new Label("Color:");
+		Label lblName = new Label(Loc.get("color") + ":");
 		lblName.setMinWidth(35);
 
 		colorPicker.getStyleClass().add("button");

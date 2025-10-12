@@ -5,6 +5,10 @@ import game.weekend.seedkeeper.db.Record;
 import game.weekend.seedkeeper.general.Loc;
 
 public class Brand extends Record {
+	private static int NAME_LENGITH = 32;
+	private static int DESCR_LENGITH = 255;
+	private static int LINK_LENGITH = 512;
+
 	private int id;
 	private String name;
 	private String descr;
@@ -34,7 +38,7 @@ public class Brand extends Record {
 	}
 
 	public void setName(String name) {
-		this.name = (name == null) ? "" : name.trim();
+		this.name = getNormString(name, NAME_LENGITH);
 	}
 
 	public String getDescr() {
@@ -42,7 +46,7 @@ public class Brand extends Record {
 	}
 
 	public void setDescr(String descr) {
-		this.descr = descr;
+		this.descr = getNormString(descr, DESCR_LENGITH);
 	}
 
 	public String getLink() {
@@ -50,7 +54,7 @@ public class Brand extends Record {
 	}
 
 	public void setLink(String link) {
-		this.link = link;
+		this.link = getNormString(link, LINK_LENGITH);
 	}
 
 	public Error check() {

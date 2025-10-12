@@ -46,7 +46,7 @@ public class BrandJournal extends Journal<Brand> {
 
 		// Control objects are switched to viewing mode
 		setEditMode(false);
-		// The current line is the first line in the list.
+		// The current line is the first line in the list
 		getTableView().getSelectionModel().selectFirst();
 
 		return vb;
@@ -289,6 +289,9 @@ public class BrandJournal extends Journal<Brand> {
 		// Scroll to new entry only when adding
 		if (isAppendMode())
 			getTableView().scrollTo(brand);
+
+		// We don't sort. Edited items remain in place, and added items are added to the end of the list.
+		// getTableView().sort();
 
 		doCancel(false);
 	}
