@@ -75,8 +75,8 @@ public class Status extends Record {
 		Status other = (Status) o;
 
 		boolean result;
-		result = checkDifference(Loc.get("of_the_name_is"), name, other.name, sb);
-		result |= checkDifference(Loc.get("of_the_color_is"), color, other.color, sb);
+		result = checkDifference(Loc.get("of_the_name_is"), getName(), other.getName(), sb);
+		result |= checkDifference(Loc.get("of_the_color_is"), getColor(), other.getColor(), sb);
 
 		if (result)
 			setDifferences(sb.toString());

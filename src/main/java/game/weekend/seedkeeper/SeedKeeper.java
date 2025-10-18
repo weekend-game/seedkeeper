@@ -5,6 +5,7 @@ import game.weekend.seedkeeper.general.Journal;
 import game.weekend.seedkeeper.general.Loc;
 import game.weekend.seedkeeper.general.Proper;
 import game.weekend.seedkeeper.journals.BrandJournal;
+import game.weekend.seedkeeper.journals.SeedJournal;
 import game.weekend.seedkeeper.journals.SetupJournal;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -29,10 +30,10 @@ public class SeedKeeper extends Application {
 	public static final String APP_NAME = "SeedKeeper";
 
 	/** Version */
-	public static final String APP_VERSION = "00.02";
+	public static final String APP_VERSION = "00.03";
 
 	/** Date */
-	public static final String APP_DATE = "12.10.2025";
+	public static final String APP_DATE = "18.10.2025";
 
 	private static Stage stage = null;
 	private static TabPane tabPane = null;
@@ -91,6 +92,7 @@ public class SeedKeeper extends Application {
 	}
 
 	private Scene getScene() {
+		tabPane.getTabs().add(new SeedTab(new SeedJournal(), Loc.get("seed")));
 		tabPane.getTabs().add(new SeedTab(new BrandJournal(), Loc.get("brands")));
 		tabPane.getTabs().add(new SeedTab(new SetupJournal(), Loc.get("setup")));
 

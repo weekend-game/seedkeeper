@@ -70,6 +70,14 @@ public class Proper {
 		return Integer.parseInt(properties.getProperty(name, "" + def));
 	}
 
+    public static double getProperty(String name, double def) {
+        return Double.parseDouble(properties.getProperty(name, "" + def));
+    }
+
+    public static void setProperty(String name, double value) {
+        properties.setProperty(name, "" + value);
+    }
+
 	/**
 	 * Save the property with an integer value.
 	 * 

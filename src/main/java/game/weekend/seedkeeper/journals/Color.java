@@ -52,7 +52,7 @@ public class Color extends Record {
 
 		Color other = (Color) o;
 
-		boolean result = checkDifference(Loc.get("of_the_name_is"), name, other.name, sb);
+		boolean result = checkDifference(Loc.get("of_the_name_is"), getName(), other.getName(), sb);
 
 		if (result)
 			setDifferences(sb.toString());

@@ -37,7 +37,7 @@ public class Kind extends Record {
 
 	public Error check() {
 		if (getName() == null || getName().trim().length() == 0)
-			return new Error(Loc.get("enter_the_type_name"), 2);
+			return new Error(Loc.get("enter_the_kind_name"), 2);
 
 		return null;
 	}
@@ -52,7 +52,7 @@ public class Kind extends Record {
 
 		Kind other = (Kind) o;
 
-		boolean result = checkDifference(Loc.get("of_the_name_is"), name, other.name, sb);
+		boolean result = checkDifference(Loc.get("of_the_name_is"), getName(), other.getName(), sb);
 
 		if (result)
 			setDifferences(sb.toString());

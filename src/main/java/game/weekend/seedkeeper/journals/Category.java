@@ -63,7 +63,7 @@ public class Category extends Record {
 		Category other = (Category) o;
 
 		boolean result;
-		result = checkDifference(Loc.get("of_the_name_is"), name, other.name, sb);
+		result = checkDifference(Loc.get("of_the_name_is"), getName(), other.getName(), sb);
 
 		if (result)
 			setDifferences(sb.toString());

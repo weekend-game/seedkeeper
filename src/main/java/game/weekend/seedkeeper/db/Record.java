@@ -34,13 +34,19 @@ public class Record {
 		return true;
 	}
 
+	public int getNormInt(Integer value) {
+		int result = (value == null) ? 0 : (int) value;
+		return result;
+	}
+
 	public String getNormString(String string, int length) {
 
-		if (string != null)
+		if (string != null) {
 			string = string.trim();
 
-		if (string.length() > length)
-			string = string.substring(0, length);
+			if (string.length() > length)
+				string = string.substring(0, length);
+		}
 
 		return string;
 	}

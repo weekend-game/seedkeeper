@@ -8,6 +8,7 @@ import game.weekend.seedkeeper.journals.BrandTables;
 import game.weekend.seedkeeper.journals.CategoryTables;
 import game.weekend.seedkeeper.journals.ColorTables;
 import game.weekend.seedkeeper.journals.KindTables;
+import game.weekend.seedkeeper.journals.SeedTables;
 import game.weekend.seedkeeper.journals.StatusTables;
 
 public class DB {
@@ -37,6 +38,7 @@ public class DB {
 
 	private final Connection connection;
 
+	public final SeedTables seed;
 	public final BrandTables brand;
 	public final CategoryTables category;
 	public final ColorTables color;
@@ -67,6 +69,7 @@ public class DB {
 		}
 		connection = c;
 
+		seed = new SeedTables();
 		brand = new BrandTables();
 		category = new CategoryTables();
 		color = new ColorTables();

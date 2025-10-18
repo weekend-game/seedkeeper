@@ -74,10 +74,10 @@ public class Brand extends Record {
 
 		Brand other = (Brand) o;
 
-		boolean result;
-		result = checkDifference(Loc.get("of_the_name_is"), name, other.name, sb);
-		result |= checkDifference(Loc.get("of_the_descr_is"), descr, other.descr, sb);
-		result |= checkDifference(Loc.get("of_the_link_is"), link, other.link, sb);
+		boolean result = false;
+		result |= checkDifference(Loc.get("of_the_name_is"), getName(), other.getName(), sb);
+		result |= checkDifference(Loc.get("of_the_descr_is"), getDescr(), other.getDescr(), sb);
+		result |= checkDifference(Loc.get("of_the_link_is"), getLink(), other.getLink(), sb);
 
 		if (result)
 			setDifferences(sb.toString());
