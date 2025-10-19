@@ -69,12 +69,12 @@ public class DB {
 		}
 		connection = c;
 
-		seed = new SeedTables();
-		brand = new BrandTables();
-		category = new CategoryTables();
-		color = new ColorTables();
-		kind = new KindTables();
-		status = new StatusTables();
+		seed = new SeedTables(connection);
+		brand = new BrandTables(connection);
+		category = new CategoryTables(connection);
+		color = new ColorTables(connection);
+		kind = new KindTables(connection);
+		status = new StatusTables(connection);
 	}
 
 	public Connection getConnection() {

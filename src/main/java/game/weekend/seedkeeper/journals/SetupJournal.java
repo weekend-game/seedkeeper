@@ -1,8 +1,10 @@
 package game.weekend.seedkeeper.journals;
 
+import game.weekend.seedkeeper.general.Dialogues;
 import game.weekend.seedkeeper.general.IReadOnly;
 import game.weekend.seedkeeper.general.Journal;
 import game.weekend.seedkeeper.general.Loc;
+import game.weekend.seedkeeper.general.Proper;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -32,8 +34,23 @@ public class SetupJournal extends Journal implements IReadOnly {
 
 		enButton.setToggleGroup(btgLan);
 		enButton.setSelected(Loc.getLanguage().equalsIgnoreCase("EN"));
+		enButton.setToggleGroup(btgLan);
+		enButton.setSelected(Loc.getLanguage().equalsIgnoreCase("EN"));
+		enButton.setOnAction(event -> {
+			String prevLanguage = Proper.getProperty("Language", "EN");
+			Proper.setProperty("Language", "EN");
+			if (!prevLanguage.equalsIgnoreCase("EN"))
+				Dialogues.ErrMes(Loc.get("restart_the_application"));
+		});
+
 		ruButton.setToggleGroup(btgLan);
 		ruButton.setSelected(Loc.getLanguage().equalsIgnoreCase("RU"));
+		ruButton.setOnAction(event -> {
+			String prevLanguage = Proper.getProperty("Language", "RU");
+			Proper.setProperty("Language", "RU");
+			if (!prevLanguage.equalsIgnoreCase("RU"))
+				Dialogues.ErrMes(Loc.get("restart_the_application"));
+		});
 
 		categoriesJournal.addReadOnlyObject(statusesJournal);
 		categoriesJournal.addReadOnlyObject(colorsJournal);

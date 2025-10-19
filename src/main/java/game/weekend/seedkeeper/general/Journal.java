@@ -45,7 +45,7 @@ public abstract class Journal<T> {
 
 	// The journal can be in four states.
 
-	// ReadOnly is a mode in which the log does not respond to attempts to edit the
+	// ReadOnly is a mode in which the journal does not respond to attempts to edit the
 	// record.
 	private boolean readOnlyMode = false;
 
@@ -168,7 +168,7 @@ public abstract class Journal<T> {
 	}
 
 	/**
-	 * Display the current mode (usually: Add, Add Copy, Edit)
+	 * Display the current mode (usually: New, New Copy, Edit)
 	 */
 	protected void displayMode(String mode) {
 	}

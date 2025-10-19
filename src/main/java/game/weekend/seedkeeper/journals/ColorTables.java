@@ -3,6 +3,7 @@ package game.weekend.seedkeeper.journals;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -15,6 +16,21 @@ import javafx.collections.ObservableList;
  * Colors
  */
 public class ColorTables extends DBTables {
+
+	public ColorTables(Connection c) {
+		if (c == null)
+			return;
+
+		try (Statement s = c.createStatement()) {
+			ResultSet rs = s.executeQuery("SELECT name FROM Colors WHERE 0=1");
+			ResultSetMetaData metaData = rs.getMetaData();
+
+			Color.setNAME_LENGTH(metaData.getPrecision(1));
+
+		} catch (SQLException e) {
+			System.out.println("ColorTables.ColorTables() - " + e);
+		}
+	}
 
 	public ObservableList<Color> getList() {
 		ObservableList<Color> list = FXCollections.observableArrayList();

@@ -30,10 +30,10 @@ public class SeedKeeper extends Application {
 	public static final String APP_NAME = "SeedKeeper";
 
 	/** Version */
-	public static final String APP_VERSION = "00.03";
+	public static final String APP_VERSION = "00.04";
 
 	/** Date */
-	public static final String APP_DATE = "18.10.2025";
+	public static final String APP_DATE = "19.10.2025";
 
 	private static Stage stage = null;
 	private static TabPane tabPane = null;
@@ -96,7 +96,7 @@ public class SeedKeeper extends Application {
 		tabPane.getTabs().add(new SeedTab(new BrandJournal(), Loc.get("brands")));
 		tabPane.getTabs().add(new SeedTab(new SetupJournal(), Loc.get("setup")));
 
-		// Event in the log: Pressing ENTER
+		// Event in the journal: Pressing ENTER
 		tabPane.setOnKeyPressed(ke -> {
 			String key = ke.getCode().toString();
 			if (key.equalsIgnoreCase("ENTER"))
@@ -129,7 +129,7 @@ public class SeedKeeper extends Application {
 	static class SeedTab extends Tab {
 		public final Journal<?> journal;
 
-		// Events in the log: Activate and Deactivate
+		// Events in the journal: Activate and Deactivate
 		public SeedTab(Journal<?> journal, String name) {
 			super(name, journal.getPane());
 			this.journal = journal;

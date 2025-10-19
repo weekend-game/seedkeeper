@@ -5,7 +5,11 @@ import game.weekend.seedkeeper.db.Record;
 import game.weekend.seedkeeper.general.Loc;
 
 public class Category extends Record {
-	private static int NAME_LENGITH = 64;
+	private static int NAME_LENGTH = -1;
+
+	public static void setNAME_LENGTH(int val) {
+		NAME_LENGTH = val;
+	}
 
 	private int id;
 	private int numb;
@@ -42,7 +46,7 @@ public class Category extends Record {
 	}
 
 	public void setName(String name) {
-		this.name = getNormString(name, NAME_LENGITH);
+		this.name = getNormString(name, NAME_LENGTH);
 	}
 
 	public Error check() {

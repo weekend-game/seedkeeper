@@ -3,6 +3,7 @@ package game.weekend.seedkeeper.journals;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -15,6 +16,23 @@ import javafx.collections.ObservableList;
  * Brands
  */
 public class BrandTables extends DBTables {
+
+	public BrandTables(Connection c) {
+		if (c == null)
+			return;
+
+		try (Statement s = c.createStatement()) {
+			ResultSet rs = s.executeQuery("SELECT name, descr, link FROM Brands WHERE 0=1");
+			ResultSetMetaData metaData = rs.getMetaData();
+
+			Brand.setNAME_LENGTH(metaData.getPrecision(1));
+			Brand.setDESCR_LENGTH(metaData.getPrecision(2));
+			Brand.setLINK_LENGTH(metaData.getPrecision(3));
+
+		} catch (SQLException e) {
+			System.out.println("BrandTables.BrandTables() - " + e);
+		}
+	}
 
 	public ObservableList<Brand> getList() {
 		ObservableList<Brand> list = FXCollections.observableArrayList();

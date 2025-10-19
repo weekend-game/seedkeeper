@@ -13,19 +13,71 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class Seed extends Record {
-	public static int NAME_LENGTH = 255;
-	public static int ARTICLE_LENGTH = 16;
-	public static int DESCRIPTION_LENGTH = 4096;
-	public static int VEGETATION_LENGTH = 32;
-	public static int MASS_LENGTH = 32;
-	public static int HEIGHT_LENGTH = 32;
-	public static int YIELD_LENGTH = 32;
-	public static int LENGTH_LENGTH = 32;
-	public static int SOWING_TIME_LENGTH = 32;
-	public static int TRANSPLANT_TIME_LENGTH = 32;
-	public static int IN_GROUND_LENGTH = 32;
-	public static int PLANTING_SCHEME_LENGTH = 32;
-	public static int GROUND_LENGTH = 3;
+	private static int NAME_LENGTH = -1;
+	private static int ARTICLE_LENGTH = -1;
+	private static int DESCRIPTION_LENGTH = -1;
+	private static int VEGETATION_LENGTH = -1;
+	private static int MASS_LENGTH = -1;
+	private static int HEIGHT_LENGTH = -1;
+	private static int YIELD_LENGTH = -1;
+	private static int LENGTH_LENGTH = -1;
+	private static int SOWING_TIME_LENGTH = -1;
+	private static int TRANSPLANT_TIME_LENGTH = -1;
+	private static int IN_GROUND_LENGTH = -1;
+	private static int PLANTING_SCHEME_LENGTH = -1;
+	private static int GROUND_LENGTH = -1;
+
+	public static void setNAME_LENGTH(int val) {
+		NAME_LENGTH = val;
+	}
+
+	public static void setARTICLE_LENGTH(int val) {
+		ARTICLE_LENGTH = val;
+	}
+
+	public static void setDESCRIPTION_LENGTH(int val) {
+		DESCRIPTION_LENGTH = val;
+	}
+
+	public static void setVEGETATION_LENGTH(int val) {
+		VEGETATION_LENGTH = val;
+	}
+
+	public static void setMASS_LENGTH(int val) {
+		MASS_LENGTH = val;
+	}
+
+	public static void setHEIGHT_LENGTH(int val) {
+		HEIGHT_LENGTH = val;
+	}
+
+	public static void setYIELD_LENGTH(int val) {
+		YIELD_LENGTH = val;
+	}
+
+	public static void setLENGTH_LENGTH(int val) {
+		LENGTH_LENGTH = val;
+	}
+
+	public static void setSOWING_TIME_LENGTH(int val) {
+		SOWING_TIME_LENGTH = val;
+	}
+
+	public static void setTRANSPLANT_TIME_LENGTH(int val) {
+		TRANSPLANT_TIME_LENGTH = val;
+	}
+
+	public static void setIN_GROUND_LENGTH(int val) {
+		IN_GROUND_LENGTH = val;
+	}
+
+	public static void setPLANTING_SCHEME_LENGTH(int val) {
+		PLANTING_SCHEME_LENGTH = val;
+	}
+
+	public static void setGROUND_LENGTH(int val) {
+		GROUND_LENGTH = val;
+	}
 
 	private Integer id;
 	private Integer brand_id;

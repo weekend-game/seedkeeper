@@ -5,6 +5,7 @@ import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
@@ -17,6 +18,35 @@ import javafx.collections.ObservableList;
  * Seed
  */
 public class SeedTables extends DBTables {
+
+	public SeedTables(Connection c) {
+		if (c == null)
+			return;
+
+		try (Statement s = c.createStatement()) {
+			ResultSet rs = s.executeQuery("SELECT name, article, description, vegetation, mass, height, yield, "
+					+ " length, sowing_time, transplant_time, in_ground, planting_scheme, ground FROM Seeds s WHERE 0=1");
+			ResultSetMetaData metaData = rs.getMetaData();
+
+			int ind = 0;
+			Seed.setNAME_LENGTH(metaData.getPrecision(++ind));
+			Seed.setARTICLE_LENGTH(metaData.getPrecision(++ind));
+			Seed.setDESCRIPTION_LENGTH(metaData.getPrecision(++ind));
+			Seed.setVEGETATION_LENGTH(metaData.getPrecision(++ind));
+			Seed.setMASS_LENGTH(metaData.getPrecision(++ind));
+			Seed.setHEIGHT_LENGTH(metaData.getPrecision(++ind));
+			Seed.setYIELD_LENGTH(metaData.getPrecision(++ind));
+			Seed.setLENGTH_LENGTH(metaData.getPrecision(++ind));
+			Seed.setSOWING_TIME_LENGTH(metaData.getPrecision(++ind));
+			Seed.setTRANSPLANT_TIME_LENGTH(metaData.getPrecision(++ind));
+			Seed.setIN_GROUND_LENGTH(metaData.getPrecision(++ind));
+			Seed.setPLANTING_SCHEME_LENGTH(metaData.getPrecision(++ind));
+			Seed.setGROUND_LENGTH(metaData.getPrecision(++ind));
+
+		} catch (SQLException e) {
+			System.out.println("SeedTables.SeedTables() - " + e);
+		}
+	}
 
 	public ObservableList<Seed> getList() {
 		ObservableList<Seed> list = FXCollections.observableArrayList();
@@ -43,7 +73,7 @@ public class SeedTables extends DBTables {
 		return list;
 	}
 
-	public void read(Seed seed) {
+	public void get(Seed seed) {
 		if (seed == null)
 			return;
 

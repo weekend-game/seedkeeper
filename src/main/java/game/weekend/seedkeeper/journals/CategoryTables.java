@@ -3,6 +3,7 @@ package game.weekend.seedkeeper.journals;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -15,6 +16,20 @@ import javafx.collections.ObservableList;
  * Categories
  */
 public class CategoryTables extends DBTables {
+
+	public CategoryTables(Connection c) {
+		if (c == null)
+			return;
+
+		try (Statement s = c.createStatement()) {
+			ResultSet rs = s.executeQuery("SELECT name FROM Categories WHERE 0=1");
+			ResultSetMetaData metaData = rs.getMetaData();
+
+			Category.setNAME_LENGTH(metaData.getPrecision(1));
+		} catch (SQLException e) {
+			System.out.println("CategoryTables.CategoryTables() - " + e);
+		}
+	}
 
 	public ObservableList<Category> getList() {
 		ObservableList<Category> list = FXCollections.observableArrayList();

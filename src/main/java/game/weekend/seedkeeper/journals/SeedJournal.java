@@ -373,7 +373,7 @@ public class SeedJournal extends Journal<Seed> {
 			seed = new Seed();
 		} else {
 			if (seed.getId() != null)
-				getDB().seed.read(seed);
+				getDB().seed.get(seed);
 		}
 
 		ComboItem.setValue(seed.getBrand_id() == null ? 0 : seed.getBrand_id(), cboBrand);
