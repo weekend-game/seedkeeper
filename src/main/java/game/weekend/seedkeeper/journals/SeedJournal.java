@@ -1,5 +1,7 @@
 package game.weekend.seedkeeper.journals;
 
+import game.weekend.seedkeeper.SeedKeeper;
+import game.weekend.seedkeeper.controls.MakerPhoto;
 import game.weekend.seedkeeper.controls.StatusBar;
 import game.weekend.seedkeeper.controls.WGCheckBox;
 import game.weekend.seedkeeper.controls.WGSearchableComboBox;
@@ -54,6 +56,8 @@ public class SeedJournal extends Journal<Seed> {
 	private final WGTextField txtPlanting_scheme = new WGTextField(this);
 	private final WGTextField txtGround = new WGTextField(this);
 
+	private final MakerPhoto makerPhoto;
+
 	private final Button btnNew = getButtonNew();
 	private final Button btnNewCopy = getButtonNewCopy();
 	private final Button btnEdit = getButtonEdit();
@@ -65,6 +69,8 @@ public class SeedJournal extends Journal<Seed> {
 
 	public SeedJournal() {
 		lastDividerPosition = Proper.getProperty("splitPane.DividerPositions", 0.25);
+
+		makerPhoto = MakerPhoto.getMakerPhoto(SeedKeeper.getStage());
 	}
 
 	@Override
@@ -171,8 +177,9 @@ public class SeedJournal extends Journal<Seed> {
 		tarDescription.setPrefHeight(380);
 		tarDescription.setWrapText(true);
 
-		VBox photoPane = new VBox(5, new Label(Loc.get("description") + ":"), tarDescription);
-		VBox descPane = new VBox(5);
+		VBox photoPane = makerPhoto.getPhotoPane();
+		VBox descPane = new VBox(5, new Label(Loc.get("description") + ":"), tarDescription);
+
 		HBox photoAndDesc = new HBox(5);
 		photoAndDesc.getChildren().addAll(photoPane, descPane);
 		photoAndDesc.setPadding(new Insets(0, 5, 0, 5));
@@ -264,6 +271,8 @@ public class SeedJournal extends Journal<Seed> {
 		btnDelete.setDisable(editMode);
 		btnOk.setDisable(!editMode);
 		btnCancel.setDisable(!editMode);
+
+		makerPhoto.setEditable(editMode);
 	}
 
 	@Override
@@ -312,6 +321,8 @@ public class SeedJournal extends Journal<Seed> {
 		seed.setIn_ground(txtIn_ground.getText());
 		seed.setPlanting_scheme(txtPlanting_scheme.getText());
 		seed.setGround(txtGround.getText());
+
+		seed.setPhoto(makerPhoto.getByteArray());
 
 		if (!isAppendMode())
 			seed.setId(getCurrentRecord().getId());
@@ -396,6 +407,8 @@ public class SeedJournal extends Journal<Seed> {
 		txtIn_ground.setText(seed.getIn_ground());
 		txtPlanting_scheme.setText(seed.getPlanting_scheme());
 		txtGround.setText(seed.getGround());
+
+		makerPhoto.setPhotoFromByteArray(seed.getPhoto());
 	}
 
 	@Override
