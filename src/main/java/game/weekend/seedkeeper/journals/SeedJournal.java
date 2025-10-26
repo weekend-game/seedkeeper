@@ -19,8 +19,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -56,6 +54,7 @@ public class SeedJournal extends Journal<Seed> {
 	private final WGTextField txtPlanting_scheme = new WGTextField(this);
 	private final WGTextField txtGround = new WGTextField(this);
 
+	private SeedList seedList;
 	private final MakerPhoto makerPhoto;
 
 	private final Button btnNew = getButtonNew();
@@ -75,7 +74,8 @@ public class SeedJournal extends Journal<Seed> {
 
 	@Override
 	public VBox getPane() {
-		TableView<Seed> leftPane = makeTableView();
+		seedList = new SeedList(this);
+		VBox leftPane = seedList.getTablePane();
 
 		BorderPane rightPane = new BorderPane();
 		rightPane.setCenter(makeTextFields());
@@ -95,32 +95,6 @@ public class SeedJournal extends Journal<Seed> {
 	}
 
 	// Components of the journal //
-
-	// Screen table
-	private TableView<Seed> makeTableView() {
-		// Table Columns
-
-		// This column will be sorted by default
-		TableColumn<Seed, String> colName = getTextColumn(Loc.get("name"), "name", 200);
-		getTableView().getColumns().add(colName);
-
-		getTableView().getColumns().add(getTextColumn(Loc.get("article"), "article", 120));
-
-		// Data for the screen table
-		getTableView().setItems(getDB().seed.getList());
-
-		// Useful key and click interceptions
-		makeTableHandlers(getTableView());
-
-		// Sorting by column by default
-		getTableView().getSortOrder().add(colName);
-		getTableView().sort();
-
-		// Screen table dimensions
-		getTableView().setPrefHeight(4096);
-
-		return getTableView();
-	}
 
 	// Editing area for a record
 	private VBox makeTextFields() {
@@ -373,6 +347,8 @@ public class SeedJournal extends Journal<Seed> {
 	public void writeProp() {
 		double[] divPos = splitPane.getDividerPositions();
 		Proper.setProperty("splitPane.DividerPositions", divPos[0]);
+		Proper.setProperty("Filter.Category.Index", seedList.getFilterCategoryIndex());
+
 	}
 
 	@Override
@@ -472,7 +448,7 @@ public class SeedJournal extends Journal<Seed> {
 		if (isAppendMode()) {
 			getDB().seed.setEdited(true);
 			getDB().seed.add(seed);
-			getTableView().getItems().add(seed);
+			seedList.add(seed);
 		} else {
 			if (getCurrentRecord().hasDifference(seed)) {
 				String oldValue = getCurrentRecord().getName() == null ? "" : getCurrentRecord().getName().trim();
@@ -481,7 +457,8 @@ public class SeedJournal extends Journal<Seed> {
 					getDB().seed.setEdited(true);
 
 				getDB().seed.set(seed, true);
-				getTableView().getItems().set(getTableView().getSelectionModel().getSelectedIndex(), seed);
+
+				seedList.set(seed);
 			}
 		}
 

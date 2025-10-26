@@ -48,7 +48,7 @@ public class SeedTables extends DBTables {
 		}
 	}
 
-	public ObservableList<Seed> getList() {
+	public ObservableList<Seed> getList(int category_id) {
 		ObservableList<Seed> list = FXCollections.observableArrayList();
 
 		Connection c = getConnection();
@@ -56,11 +56,16 @@ public class SeedTables extends DBTables {
 			return list;
 
 		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT s.id, s.mark, s.name, s.article, s.use_by, "
-					+ " b.name AS brand, s.vegetation, "
+			String req = "SELECT s.id, s.mark, s.name, s.article, s.use_by, " + " b.name AS brand, s.vegetation, "
 					+ " st.name AS status, s.hybrid, st.color AS status_color, st.id AS status_id, b.id AS brand_id "
 					+ " FROM Seeds s " + " LEFT OUTER JOIN statuses st ON st.id = s.status_id "
-					+ " LEFT OUTER JOIN brands b ON b.id = s.brand_id " + " WHERE 0=0 ORDER BY s.name ");
+					+ " LEFT OUTER JOIN brands b ON b.id = s.brand_id " + " WHERE 0=0 ";
+
+			if (category_id > 0)
+				req = req + " AND category_id = " + category_id;
+			req = req + " ORDER BY s.name ";
+
+			ResultSet rs = s.executeQuery(req);
 
 			while (rs.next())
 				list.add(new Seed(rs.getInt(1), rs.getBoolean(2), rs.getString(3), rs.getString(4), rs.getInt(5),

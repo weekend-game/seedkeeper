@@ -30,10 +30,10 @@ public class SeedKeeper extends Application {
 	public static final String APP_NAME = "SeedKeeper";
 
 	/** Version */
-	public static final String APP_VERSION = "00.05";
+	public static final String APP_VERSION = "00.06";
 
 	/** Date */
-	public static final String APP_DATE = "25.10.2025";
+	public static final String APP_DATE = "26.10.2025";
 
 	private static Stage stage = null;
 	private static TabPane tabPane = null;
