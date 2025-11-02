@@ -242,7 +242,7 @@ public class BrandJournal extends Journal<Brand> {
 		Brand brand = getCurrentRecord();
 		if (brand != null) {
 			if (!getDB().brand.canRemove(brand)) {
-				Dialogues.ErrMes(Loc.get("the_specified_brand_is_in_use_and_cannot_be_removed"));
+				Dialogues.ErrMes(Loc.get("the_specified_brand_is_in_use_and_cannot_be_removed") + ".");
 				requestFocusForTableView();
 				return false;
 			}
@@ -250,8 +250,8 @@ public class BrandJournal extends Journal<Brand> {
 			String mes = Loc.get("are_you_sure_you_want_to_remove_the_brand") + ": \"" + brand.getName() + "\"?";
 			Dialogues.ConMes(mes, (event) -> {
 				if (getDB().brand.remove(brand)) {
-					getTableView().getItems().remove(brand);
 					getTableView().getSelectionModel().selectBelowCell();
+					getTableView().getItems().remove(brand);
 				}
 			});
 		}
@@ -289,9 +289,6 @@ public class BrandJournal extends Journal<Brand> {
 		// Scroll to new entry only when adding
 		if (isAppendMode())
 			getTableView().scrollTo(brand);
-
-		// We don't sort. Edited items remain in place, and added items are added to the end of the list.
-		// getTableView().sort();
 
 		doCancel(false);
 	}

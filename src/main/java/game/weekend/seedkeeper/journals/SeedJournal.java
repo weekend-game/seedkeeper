@@ -316,20 +316,11 @@ public class SeedJournal extends Journal<Seed> {
 	public void activate() {
 		btnCancel.setCancelButton(true);
 
-		if (getDB().brand.isEdited())
-			cboBrand.setItems(getDB().brand.getListForCombo());
-
-		if (getDB().category.isEdited())
-			cboCategory.setItems(getDB().category.getListForCombo());
-
-		if (getDB().status.isEdited())
-			cboStatus.setItems(getDB().status.getListForCombo());
-
-		if (getDB().color.isEdited())
-			cboColor.setItems(getDB().color.getListForCombo());
-
-		if (getDB().kind.isEdited())
-			cboBrand.setItems(getDB().kind.getListForCombo());
+		refreshCombo(getDB().brand, cboBrand);
+		refreshCombo(getDB().category, cboCategory);
+		refreshCombo(getDB().status, cboStatus);
+		refreshCombo(getDB().color, cboColor);
+		refreshCombo(getDB().kind, cboKind);
 
 		if (isEditMode()) {
 			if (getCurrentNode() != null)
@@ -392,7 +383,12 @@ public class SeedJournal extends Journal<Seed> {
 		if (!super.doNew())
 			return false;
 
-		doDisplay(new Seed());
+		Seed seed = new Seed();
+
+		int id = seedList.getCategoryID();
+		seed.setCategory_id(id);
+
+		doDisplay(seed);
 
 		txtName.requestFocus();
 

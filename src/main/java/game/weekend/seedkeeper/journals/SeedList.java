@@ -174,6 +174,12 @@ public class SeedList {
 			tableView.getSelectionModel().selectFirst();
 	}
 
+	public void setDisable(boolean value) {
+		comboBox.setDisable(value);
+		tableView.setDisable(value);
+		textField.setEditable(!value);
+	}
+
 	public void add(Seed seed) {
 		tableItems.add(seed);
 	}
@@ -192,6 +198,10 @@ public class SeedList {
 
 	public void remove(Seed seed) {
 		tableItems.remove(seed);
+	}
+
+	public int getCategoryID() {
+		return comboBox.getSelectionModel().getSelectedItem().getId();
 	}
 
 	public int getFilterCategoryIndex() {

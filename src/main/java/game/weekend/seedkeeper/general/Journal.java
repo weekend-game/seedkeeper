@@ -4,9 +4,12 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import game.weekend.seedkeeper.controls.WGSearchableComboBox;
 import game.weekend.seedkeeper.controls.WGTableView;
 import game.weekend.seedkeeper.controls.WHHyperlinkCellFactory;
+import game.weekend.seedkeeper.db.ComboItem;
 import game.weekend.seedkeeper.db.DB;
+import game.weekend.seedkeeper.db.DBTables;
 import game.weekend.seedkeeper.db.Record;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -489,6 +492,15 @@ public abstract class Journal<T> {
 	}
 
 	public void deactivate() {
+	}
+
+	public void refreshCombo(DBTables dbtables, WGSearchableComboBox comboBox) {
+		if (dbtables.isEdited()) {
+			Integer id = comboBox.getValue().getId();
+			comboBox.setItems(dbtables.getListForCombo());
+			if (id != null)
+				ComboItem.setValue(id, comboBox);
+		}
 	}
 
 	public void writeProp() {

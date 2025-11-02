@@ -86,18 +86,19 @@ public class CategoryJournal extends Journal<Category> implements IReadOnly {
 
 		// Screen table dimensions
 		getTableView().setPrefHeight(256);
-		getTableView().setPrefWidth(256);
+		getTableView().setPrefWidth(300);
 
 		return getTableView();
 	}
 
 	// Editing area for a record
 	private VBox makeTextFields() {
-		HBox hb1 = getTextBox(Loc.get("name") + ":", 35, txtName, 9);
+		VBox vbName = new VBox();
+		vbName.getChildren().addAll(new Label(Loc.get("name") + ":"), getTextBox("", 8, txtName, 32));
 
 		VBox vb = new VBox();
 		vb.setPadding(new Insets(5, 5, 5, 10));
-		vb.getChildren().addAll(hb1, getVSpacer(), btnShiftUp, new Label(""), btnShiftDown, getVSpacer());
+		vb.getChildren().addAll(vbName, getVSpacer(), btnShiftUp, new Label(""), btnShiftDown, getVSpacer());
 		return vb;
 	}
 
@@ -152,11 +153,9 @@ public class CategoryJournal extends Journal<Category> implements IReadOnly {
 				this.txtName.requestFocus();
 				break;
 			}
-
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 
 	@Override
@@ -217,7 +216,7 @@ public class CategoryJournal extends Journal<Category> implements IReadOnly {
 		if (category != null) {
 
 			if (!getDB().category.canRemove(category)) {
-				Dialogues.ErrMes(Loc.get("the_specified_category_is_in_use_and_cannot_be_removed"));
+				Dialogues.ErrMes(Loc.get("the_specified_category_is_in_use_and_cannot_be_removed") + ".");
 				requestFocusForTableView();
 				return false;
 			}
@@ -231,8 +230,8 @@ public class CategoryJournal extends Journal<Category> implements IReadOnly {
 						if (q.getNumb() > category.getNumb())
 							q.setNumb(q.getNumb() - 1);
 
-					getTableView().getItems().remove(category);
 					getTableView().getSelectionModel().selectBelowCell();
+					getTableView().getItems().remove(category);
 
 					getTableView().sort();
 					getTableView().refresh();

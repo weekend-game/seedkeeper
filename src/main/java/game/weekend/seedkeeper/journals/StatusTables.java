@@ -17,31 +17,61 @@ import javafx.collections.ObservableList;
  */
 public class StatusTables extends DBTables {
 
+	private PreparedStatement psList;
+	private PreparedStatement psListForCombo;
+	private PreparedStatement psSetNumb;
+	private PreparedStatement psIncNumb;
+	private PreparedStatement psDecNumb;
+	private PreparedStatement psAdd;
+	private PreparedStatement psSet;
+	private PreparedStatement psCanRemove;
+	private PreparedStatement psRemove;
+
 	public StatusTables(Connection c) {
-		if (c == null)
-			return;
+		try {
+			setFieldsLength(c);
 
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT name FROM Statuses WHERE 0=1");
-			ResultSetMetaData metaData = rs.getMetaData();
+			psList = c.prepareStatement("SELECT id, numb, name, color FROM Statuses");
 
-			Status.setNAME_LENGTH(metaData.getPrecision(1));
+			psListForCombo = c.prepareStatement("SELECT id, name FROM Statuses");
+
+			psSetNumb = c.prepareStatement("UPDATE Statuses SET numb = ? WHERE id = ?");
+			psIncNumb = c.prepareStatement("UPDATE Statuses SET numb = numb + 1 WHERE numb >= ?");
+			psDecNumb = c.prepareStatement("UPDATE Statuses SET numb = numb - 1 WHERE numb > ?");
+
+			psAdd = c.prepareStatement("INSERT INTO Statuses (numb, name, color) VALUES (?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS);
+
+			psSet = c.prepareStatement("UPDATE Statuses SET numb = ?, name = ?, color = ? WHERE id = ?");
+
+			psCanRemove = c.prepareStatement("SELECT 1 FROM Seeds WHERE status_id = ?");
+
+			psRemove = c.prepareStatement("DELETE FROM Statuses WHERE id = ?");
+
 		} catch (SQLException e) {
 			System.out.println("StatusTables.StatusTables() - " + e);
 		}
 	}
 
+	private void setFieldsLength(Connection c) throws SQLException {
+		Statement s = c.createStatement();
+		ResultSet rs = s.executeQuery("SELECT name FROM Statuses WHERE 0=1");
+		ResultSetMetaData metaData = rs.getMetaData();
+
+		Status.setNAME_LENGTH(metaData.getPrecision(1));
+
+		rs.close();
+		s.close();
+	}
+
 	public ObservableList<Status> getList() {
 		ObservableList<Status> list = FXCollections.observableArrayList();
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, numb, name, color FROM Statuses");
+		try {
+			ResultSet rs = psList.executeQuery();
 			while (rs.next())
 				list.add(new Status(rs.getInt(1), rs.getInt(2), rs.getString(3).trim(), rs.getString(4)));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("StatusTables.getList() - " + e);
 		}
@@ -49,20 +79,16 @@ public class StatusTables extends DBTables {
 		return list;
 	}
 
+	@Override
 	public ObservableList<ComboItem> getListForCombo() {
 		ObservableList<ComboItem> list = FXCollections.observableArrayList();
+		list.add(new ComboItem(0, ""));
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-
-			list.add(new ComboItem(0, ""));
-
-			ResultSet rs = s.executeQuery("SELECT id, name FROM Statuses");
+		try {
+			ResultSet rs = psListForCombo.executeQuery();
 			while (rs.next())
 				list.add(new ComboItem(rs.getInt(1), rs.getString(2)));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("StatusTables.getListForCombo() - " + e);
 		}
@@ -70,113 +96,79 @@ public class StatusTables extends DBTables {
 		return list;
 	}
 
-	public Status get(int id) {
-		Status Status = new Status();
-
-		Connection c = getConnection();
-		if (c == null || id == 0)
-			return Status;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, numb, name, color FROM Statuses WHERE id = " + id);
-			if (rs.next())
-				Status = new Status(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getString(4));
-		} catch (SQLException e) {
-			System.out.println("StatusTables.get(int id) - " + e);
-		}
-
-		return Status;
-	}
-
 	public void add(Status status) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps;
+			psIncNumb.setInt(1, status.getNumb());
+			psIncNumb.executeUpdate();
 
-			ps = c.prepareStatement("UPDATE Statuses SET numb = numb + 1 WHERE numb >= ?");
-			ps.setInt(1, status.getNumb());
-			ps.executeUpdate();
+			psAdd.setInt(1, status.getNumb());
+			psAdd.setString(2, status.getName());
+			psAdd.setString(3, status.getColor());
+			psAdd.executeUpdate();
 
-			ps = c.prepareStatement("INSERT INTO Statuses (numb, name, color) VALUES (?, ?, ?)",
-					Statement.RETURN_GENERATED_KEYS);
-			ps.setInt(1, status.getNumb());
-			ps.setString(2, status.getName());
-			ps.setString(3, status.getColor());
-			ps.executeUpdate();
-
-			ResultSet rs = ps.getGeneratedKeys();
-			if (rs.next()) {
+			ResultSet rs = psAdd.getGeneratedKeys();
+			if (rs.next())
 				status.setId(rs.getInt(1));
-			}
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("StatusTables.add(Status status) - " + e);
 		}
 	}
 
 	public void set(Status status) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps = c.prepareStatement("UPDATE Statuses SET numb = ?, name = ?, color = ? WHERE id = ?");
-			ps.setInt(1, status.getNumb());
-			ps.setString(2, status.getName());
-			ps.setString(3, status.getColor());
-			ps.setInt(4, status.getId());
-			ps.executeUpdate();
+			psSet.setInt(1, status.getNumb());
+			psSet.setString(2, status.getName());
+			psSet.setString(3, status.getColor());
+			psSet.setInt(4, status.getId());
+			psSet.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println("StatusTables.set(Status status) - " + e);
 		}
 	}
 
-	public boolean canRemove(Status Status) {
-		Connection c = getConnection();
-		if (c == null)
-			return false;
+	public boolean canRemove(Status status) {
+		boolean retValue = false;
 
-		return true;
+		try {
+			psCanRemove.setInt(1, status.getId());
+			ResultSet rs = psCanRemove.executeQuery();
+			retValue = !rs.next();
+			rs.close();
+		} catch (SQLException e) {
+			System.out.println("StatusTables.canRemove(Status status) - " + e);
+		}
+
+		return retValue;
 	}
 
 	public boolean remove(Status status) {
-		boolean deleted = false;
+		boolean removed = false;
 
-		Connection c = getConnection();
-		if (c == null)
-			return deleted;
+		try {
+			psRemove.setInt(1, status.getId());
+			psRemove.executeUpdate();
 
-		try (Statement s = c.createStatement()) {
-			s.executeUpdate("DELETE FROM Statuses WHERE id = " + status.getId());
-			deleted = true;
+			psDecNumb.setInt(1, status.getNumb());
+			psDecNumb.executeUpdate();
 
-			s.executeUpdate("UPDATE Statuses SET numb = numb - 1 WHERE numb > " + status.getNumb());
+			removed = true;
 		} catch (SQLException e) {
 			System.out.println("StatusTables.remove(Status status) - " + e);
 		}
 
-		return deleted;
+		return removed;
 	}
 
 	public void setNumb(int id1, int numb1, int id2, int numb2) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps;
+			psSetNumb.setInt(1, numb1);
+			psSetNumb.setInt(2, id1);
+			psSetNumb.executeUpdate();
 
-			ps = c.prepareStatement("UPDATE Statuses SET numb = ? WHERE id = ?");
-			ps.setInt(1, numb1);
-			ps.setInt(2, id1);
-			ps.executeUpdate();
-
-			ps = c.prepareStatement("UPDATE Statuses SET numb = ? WHERE id = ?");
-			ps.setInt(1, numb2);
-			ps.setInt(2, id2);
-			ps.executeUpdate();
+			psSetNumb.setInt(1, numb2);
+			psSetNumb.setInt(2, id2);
+			psSetNumb.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println("StatusTables.setNumb(int id1, int numb1, int id2, int numb2) - " + e);
 		}

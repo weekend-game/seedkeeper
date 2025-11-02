@@ -17,31 +17,61 @@ import javafx.collections.ObservableList;
  */
 public class CategoryTables extends DBTables {
 
+	private PreparedStatement psList;
+	private PreparedStatement psListForCombo;
+	private PreparedStatement psSetNumb;
+	private PreparedStatement psIncNumb;
+	private PreparedStatement psDecNumb;
+	private PreparedStatement psAdd;
+	private PreparedStatement psSet;
+	private PreparedStatement psCanRemove;
+	private PreparedStatement psRemove;
+
 	public CategoryTables(Connection c) {
-		if (c == null)
-			return;
+		try {
+			setFieldsLength(c);
 
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT name FROM Categories WHERE 0=1");
-			ResultSetMetaData metaData = rs.getMetaData();
+			psList = c.prepareStatement("SELECT id, numb, name FROM Categories");
 
-			Category.setNAME_LENGTH(metaData.getPrecision(1));
+			psListForCombo = c.prepareStatement("SELECT id, name FROM Categories ORDER BY numb");
+
+			psSetNumb = c.prepareStatement("UPDATE Categories SET numb = ? WHERE id = ?");
+			psIncNumb = c.prepareStatement("UPDATE Categories SET numb = numb + 1 WHERE numb >= ?");
+			psDecNumb = c.prepareStatement("UPDATE Categories SET numb = numb - 1 WHERE numb > ?");
+
+			psAdd = c.prepareStatement("INSERT INTO Categories (numb, name) VALUES (?, ?)",
+					Statement.RETURN_GENERATED_KEYS);
+
+			psSet = c.prepareStatement("UPDATE Categories SET numb = ?, name = ? WHERE id = ?");
+
+			psCanRemove = c.prepareStatement("SELECT 1 FROM Seeds WHERE category_id = ?");
+
+			psRemove = c.prepareStatement("DELETE FROM Categories WHERE id = ?");
+
 		} catch (SQLException e) {
 			System.out.println("CategoryTables.CategoryTables() - " + e);
 		}
 	}
 
+	private void setFieldsLength(Connection c) throws SQLException {
+		Statement s = c.createStatement();
+		ResultSet rs = s.executeQuery("SELECT name FROM Categories WHERE 0=1");
+		ResultSetMetaData metaData = rs.getMetaData();
+
+		Category.setNAME_LENGTH(metaData.getPrecision(1));
+
+		rs.close();
+		s.close();
+	}
+
 	public ObservableList<Category> getList() {
 		ObservableList<Category> list = FXCollections.observableArrayList();
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, numb, name FROM Categories");
+		try {
+			ResultSet rs = psList.executeQuery();
 			while (rs.next())
 				list.add(new Category(rs.getInt(1), rs.getInt(2), rs.getString(3).trim()));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("CategoryTables.getList() - " + e);
 		}
@@ -49,20 +79,16 @@ public class CategoryTables extends DBTables {
 		return list;
 	}
 
+	@Override
 	public ObservableList<ComboItem> getListForCombo() {
 		ObservableList<ComboItem> list = FXCollections.observableArrayList();
+		list.add(new ComboItem(0, ""));
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-
-			list.add(new ComboItem(0, ""));
-
-			ResultSet rs = s.executeQuery("SELECT id, name FROM Categories");
+		try {
+			ResultSet rs = psListForCombo.executeQuery();
 			while (rs.next())
 				list.add(new ComboItem(rs.getInt(1), rs.getString(2)));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("CategoryTables.getListForCombo() - " + e);
 		}
@@ -70,111 +96,77 @@ public class CategoryTables extends DBTables {
 		return list;
 	}
 
-	public Category get(int id) {
-		Category category = new Category();
-
-		Connection c = getConnection();
-		if (c == null || id == 0)
-			return category;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, numb, name FROM Categories WHERE id = " + id);
-			if (rs.next())
-				category = new Category(rs.getInt(1), rs.getInt(2), rs.getString(3));
-		} catch (SQLException e) {
-			System.out.println("CategoryTables.get(int id) - " + e);
-		}
-
-		return category;
-	}
-
 	public void add(Category category) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps;
+			psIncNumb.setInt(1, category.getNumb());
+			psIncNumb.executeUpdate();
 
-			ps = c.prepareStatement("UPDATE Categories SET numb = numb + 1 WHERE numb >= ?");
-			ps.setInt(1, category.getNumb());
-			ps.executeUpdate();
+			psAdd.setInt(1, category.getNumb());
+			psAdd.setString(2, category.getName());
+			psAdd.executeUpdate();
 
-			ps = c.prepareStatement("INSERT INTO Categories (numb, name) VALUES (?, ?)",
-					Statement.RETURN_GENERATED_KEYS);
-			ps.setInt(1, category.getNumb());
-			ps.setString(2, category.getName());
-			ps.executeUpdate();
-
-			ResultSet rs = ps.getGeneratedKeys();
-			if (rs.next()) {
+			ResultSet rs = psAdd.getGeneratedKeys();
+			if (rs.next())
 				category.setId(rs.getInt(1));
-			}
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("CategoryTables.add(Category category) - " + e);
 		}
 	}
 
 	public void set(Category category) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps = c.prepareStatement("UPDATE Categories SET numb = ?, name = ? WHERE id = ?");
-			ps.setInt(1, category.getNumb());
-			ps.setString(2, category.getName());
-			ps.setInt(3, category.getId());
-			ps.executeUpdate();
+			psSet.setInt(1, category.getNumb());
+			psSet.setString(2, category.getName());
+			psSet.setInt(3, category.getId());
+			psSet.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println("CategoryTables.set(Category category) - " + e);
 		}
 	}
 
 	public boolean canRemove(Category category) {
-		Connection c = getConnection();
-		if (c == null)
-			return false;
+		boolean retValue = false;
 
-		return true;
+		try {
+			psCanRemove.setInt(1, category.getId());
+			ResultSet rs = psCanRemove.executeQuery();
+			retValue = !rs.next();
+			rs.close();
+		} catch (SQLException e) {
+			System.out.println("CategoryTables.canRemove(Category category) - " + e);
+		}
+
+		return retValue;
 	}
 
 	public boolean remove(Category category) {
-		boolean deleted = false;
+		boolean removed = false;
 
-		Connection c = getConnection();
-		if (c == null)
-			return deleted;
+		try {
+			psRemove.setInt(1, category.getId());
+			psRemove.executeUpdate();
 
-		try (Statement s = c.createStatement()) {
-			s.executeUpdate("DELETE FROM Categories WHERE id = " + category.getId());
-			deleted = true;
+			psDecNumb.setInt(1, category.getNumb());
+			psDecNumb.executeUpdate();
 
-			s.executeUpdate("UPDATE Categories SET numb = numb - 1 WHERE numb > " + category.getNumb());
+			removed = true;
 		} catch (SQLException e) {
 			System.out.println("CategoryTables.remove(Category category) - " + e);
 		}
 
-		return deleted;
+		return removed;
 	}
 
 	public void setNumb(int id1, int numb1, int id2, int numb2) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps;
+			psSetNumb.setInt(1, numb1);
+			psSetNumb.setInt(2, id1);
+			psSetNumb.executeUpdate();
 
-			ps = c.prepareStatement("UPDATE Categories SET numb = ? WHERE id = ?");
-			ps.setInt(1, numb1);
-			ps.setInt(2, id1);
-			ps.executeUpdate();
-
-			ps = c.prepareStatement("UPDATE Categories SET numb = ? WHERE id = ?");
-			ps.setInt(1, numb2);
-			ps.setInt(2, id2);
-			ps.executeUpdate();
+			psSetNumb.setInt(1, numb2);
+			psSetNumb.setInt(2, id2);
+			psSetNumb.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println("CategoryTables.setNumb(int id1, int numb1, int id2, int numb2) - " + e);
 		}

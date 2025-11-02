@@ -2,24 +2,28 @@ package game.weekend.seedkeeper.db;
 
 import java.sql.Connection;
 
-public class DBTables {
+import javafx.collections.ObservableList;
 
-    private boolean edited = false;
+public abstract class DBTables {
 
-    public boolean isEdited() {
-        return edited;
-    }
+	private boolean edited = false;
 
-    public void setEdited(boolean edited) {
-        this.edited = edited;
-    }
+	public boolean isEdited() {
+		return edited;
+	}
 
-    protected DB getDB() {
-        return DB.getInstance();
-    }
+	public void setEdited(boolean edited) {
+		this.edited = edited;
+	}
 
-    protected Connection getConnection() {
-        return getDB().getConnection();
-    }
+	public DB getDB() {
+		return DB.getInstance();
+	}
+
+	abstract public ObservableList<ComboItem> getListForCombo();
+
+	protected Connection getConnection() {
+		return getDB().getConnection();
+	}
 
 }

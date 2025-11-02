@@ -68,7 +68,7 @@ public class StatusJournal extends Journal<Status> implements IReadOnly {
 		TableColumn<Status, Integer> colNumb = getIntColumn(Loc.get("number"), "numb", 60);
 		getTableView().getColumns().add(colNumb);
 
-		getTableView().getColumns().add(getTextColumn(Loc.get("name"), "name", 140));
+		getTableView().getColumns().add(getTextColumn(Loc.get("name"), "name", 180));
 		getTableView().getColumns().add(getTextColumn(Loc.get("colors"), "color", 50));
 
 		// I color the lines depending on the value of the color field
@@ -103,19 +103,20 @@ public class StatusJournal extends Journal<Status> implements IReadOnly {
 
 		// Размеры экранной таблицы
 		getTableView().setPrefHeight(256);
-		getTableView().setPrefWidth(256);
+		getTableView().setPrefWidth(300);
 
 		return getTableView();
 	}
 
 	// Editing area for a record
 	private VBox makeTextFields() {
-		HBox hb1 = getTextBox(Loc.get("name") + ":", 35, txtName, 9);
-		HBox hb2 = getColorBox(cprColor);
+		VBox vbName = new VBox();
+		vbName.getChildren().addAll(new Label(Loc.get("name") + ":"), getTextBox("", 8, txtName, 32));
+		HBox vbColor = getColorBox(cprColor);
 
 		VBox vb = new VBox();
 		vb.setPadding(new Insets(5, 5, 5, 10));
-		vb.getChildren().addAll(hb1, hb2, getVSpacer(), btnShiftUp, new Label(""), btnShiftDown, getVSpacer());
+		vb.getChildren().addAll(vbName, vbColor, getVSpacer(), btnShiftUp, new Label(""), btnShiftDown, getVSpacer());
 		return vb;
 	}
 
@@ -239,7 +240,7 @@ public class StatusJournal extends Journal<Status> implements IReadOnly {
 		if (status != null) {
 
 			if (!getDB().status.canRemove(status)) {
-				Dialogues.ErrMes(Loc.get("the_specified_status_is_in_use_and_cannot_be_removed"));
+				Dialogues.ErrMes(Loc.get("the_specified_status_is_in_use_and_cannot_be_removed") + ".");
 				requestFocusForTableView();
 				return false;
 			}
@@ -253,8 +254,8 @@ public class StatusJournal extends Journal<Status> implements IReadOnly {
 						if (q.getNumb() > status.getNumb())
 							q.setNumb(q.getNumb() - 1);
 
-					getTableView().getItems().remove(status);
 					getTableView().getSelectionModel().selectBelowCell();
+					getTableView().getItems().remove(status);
 
 					getTableView().sort();
 					getTableView().refresh();

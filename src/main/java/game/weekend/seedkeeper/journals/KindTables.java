@@ -17,31 +17,53 @@ import javafx.collections.ObservableList;
  */
 public class KindTables extends DBTables {
 
+	private PreparedStatement psList;
+	private PreparedStatement psListForCombo;
+	private PreparedStatement psAdd;
+	private PreparedStatement psSet;
+	private PreparedStatement psCanRemove;
+	private PreparedStatement psRemove;
+
 	public KindTables(Connection c) {
-		if (c == null)
-			return;
+		try {
+			setFieldsLength(c);
 
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT name FROM Kinds WHERE 0=1");
-			ResultSetMetaData metaData = rs.getMetaData();
+			psList = c.prepareStatement("SELECT id, name FROM Kinds");
 
-			Kind.setNAME_LENGTH(metaData.getPrecision(1));
+			psListForCombo = c.prepareStatement("SELECT id, name FROM Kinds ORDER BY UPPER(name)");
+
+			psAdd = c.prepareStatement("INSERT INTO Kinds (name) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+
+			psSet = c.prepareStatement("UPDATE Kinds SET name = ? WHERE id = ?");
+
+			psCanRemove = c.prepareStatement("SELECT 1 FROM Seeds WHERE kind_id = ?");
+
+			psRemove = c.prepareStatement("DELETE FROM Kinds WHERE id =  ?");
+
 		} catch (SQLException e) {
 			System.out.println("KindTables.KindTables() - " + e);
 		}
 	}
 
+	private void setFieldsLength(Connection c) throws SQLException {
+		Statement s = c.createStatement();
+		ResultSet rs = s.executeQuery("SELECT name FROM Kinds WHERE 0=1");
+		ResultSetMetaData metaData = rs.getMetaData();
+
+		Kind.setNAME_LENGTH(metaData.getPrecision(1));
+
+		rs.close();
+		s.close();
+	}
+
 	public ObservableList<Kind> getList() {
 		ObservableList<Kind> list = FXCollections.observableArrayList();
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, name FROM Kinds");
+		try {
+			ResultSet rs = psList.executeQuery();
 			while (rs.next())
 				list.add(new Kind(rs.getInt(1), rs.getString(2)));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("KindTables.getList() - " + e);
 		}
@@ -49,20 +71,16 @@ public class KindTables extends DBTables {
 		return list;
 	}
 
+	@Override
 	public ObservableList<ComboItem> getListForCombo() {
 		ObservableList<ComboItem> list = FXCollections.observableArrayList();
+		list.add(new ComboItem(0, ""));
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-
-			list.add(new ComboItem(0, ""));
-
-			ResultSet rs = s.executeQuery("SELECT id, name FROM Kinds ORDER BY UPPER(name)");
+		try {
+			ResultSet rs = psListForCombo.executeQuery();
 			while (rs.next())
 				list.add(new ComboItem(rs.getInt(1), rs.getString(2)));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("KindTables.getListForCombo() - " + e);
 		}
@@ -70,82 +88,56 @@ public class KindTables extends DBTables {
 		return list;
 	}
 
-	public Kind get(int id) {
-		Kind kind = new Kind();
-
-		Connection c = getConnection();
-		if (c == null || id == 0)
-			return kind;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, name FROM Kinds WHERE id = " + id);
-			if (rs.next())
-				kind = new Kind(rs.getInt(1), rs.getString(2));
-		} catch (SQLException e) {
-			System.out.println("KindTables.get(int id) - " + e);
-		}
-
-		return kind;
-	}
-
 	public void add(Kind kind) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps = c.prepareStatement("INSERT INTO Kinds (name) VALUES (?)",
-					Statement.RETURN_GENERATED_KEYS);
-			ps.setString(1, kind.getName());
-			ps.executeUpdate();
+			psAdd.setString(1, kind.getName());
+			psAdd.executeUpdate();
 
-			ResultSet rs = ps.getGeneratedKeys();
-			if (rs.next()) {
+			ResultSet rs = psAdd.getGeneratedKeys();
+			if (rs.next())
 				kind.setId(rs.getInt(1));
-			}
-			ps.close();
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("KindTables.add(Kind kind) - " + e);
 		}
 	}
 
 	public void set(Kind kind) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps = c.prepareStatement("UPDATE Kinds SET name = ? WHERE id = ?");
-			ps.setString(1, kind.getName());
-			ps.setInt(2, kind.getId());
-			ps.executeUpdate();
+			psSet.setString(1, kind.getName());
+			psSet.setInt(2, kind.getId());
+			psSet.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println("KindTables.set(Kind kind) - " + e);
 		}
 	}
 
 	public boolean canRemove(Kind kind) {
-		Connection c = getConnection();
-		if (c == null)
-			return false;
+		boolean retValue = false;
 
-		return true;
+		try {
+			psCanRemove.setInt(1, kind.getId());
+			ResultSet rs = psCanRemove.executeQuery();
+			retValue = !rs.next();
+			rs.close();
+		} catch (SQLException e) {
+			System.out.println("KindTables.canRemove(Kind kind) - " + e);
+		}
+
+		return retValue;
 	}
 
 	public boolean remove(Kind kind) {
-		boolean deleted = false;
+		boolean removed = false;
 
-		Connection c = getConnection();
-		if (c == null)
-			return deleted;
-
-		try (Statement s = c.createStatement()) {
-			s.executeUpdate("DELETE FROM Kinds WHERE id = " + kind.getId());
-			deleted = true;
+		try {
+			psRemove.setInt(1, kind.getId());
+			psRemove.executeUpdate();
+			removed = true;
 		} catch (SQLException e) {
 			System.out.println("KindTables.remove(Kind kind) - " + e);
 		}
 
-		return deleted;
+		return removed;
 	}
 }

@@ -72,18 +72,19 @@ public class ColorJournal extends Journal<Color> implements IReadOnly {
 
 		// Screen table dimensions
 		getTableView().setPrefHeight(256);
-		getTableView().setPrefWidth(256);
+		getTableView().setPrefWidth(300);
 
 		return getTableView();
 	}
 
 	// Editing area for a record
 	private VBox makeTextFields() {
-		HBox hb1 = getTextBox(Loc.get("name") + ":", 35, txtName, 32);
+		VBox vbName = new VBox();
+		vbName.getChildren().addAll(new Label(Loc.get("name") + ":"), getTextBox("", 8, txtName, 32));
 
 		VBox vb = new VBox();
 		vb.setPadding(new Insets(5, 5, 5, 10));
-		vb.getChildren().addAll(hb1, getVSpacer());
+		vb.getChildren().addAll(vbName, getVSpacer());
 		return vb;
 	}
 
@@ -177,7 +178,7 @@ public class ColorJournal extends Journal<Color> implements IReadOnly {
 		Color color = getCurrentRecord();
 		if (color != null) {
 			if (!getDB().color.canRemove(color)) {
-				Dialogues.ErrMes(Loc.get("the_specified_color_is_in_use_and_cannot_be_removed"));
+				Dialogues.ErrMes(Loc.get("the_specified_color_is_in_use_and_cannot_be_removed") + ".");
 				requestFocusForTableView();
 				return false;
 			}
@@ -185,8 +186,8 @@ public class ColorJournal extends Journal<Color> implements IReadOnly {
 			String mes = Loc.get("are_you_sure_you_want_to_remove_the_color") + ": \"" + color.getName() + "\"?";
 			Dialogues.ConMes(mes, (event) -> {
 				if (getDB().color.remove(color)) {
-					getTableView().getItems().remove(color);
 					getTableView().getSelectionModel().selectBelowCell();
+					getTableView().getItems().remove(color);
 				}
 			});
 		}

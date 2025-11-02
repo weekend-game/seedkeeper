@@ -17,34 +17,56 @@ import javafx.collections.ObservableList;
  */
 public class BrandTables extends DBTables {
 
+	private PreparedStatement psList;
+	private PreparedStatement psListForCombo;
+	private PreparedStatement psAdd;
+	private PreparedStatement psSet;
+	private PreparedStatement psCanRemove;
+	private PreparedStatement psRemove;
+
 	public BrandTables(Connection c) {
-		if (c == null)
-			return;
+		try {
+			setFieldsLength(c);
 
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT name, descr, link FROM Brands WHERE 0=1");
-			ResultSetMetaData metaData = rs.getMetaData();
+			psList = c.prepareStatement("SELECT id, name, descr, link FROM Brands");
 
-			Brand.setNAME_LENGTH(metaData.getPrecision(1));
-			Brand.setDESCR_LENGTH(metaData.getPrecision(2));
-			Brand.setLINK_LENGTH(metaData.getPrecision(3));
+			psListForCombo = c.prepareStatement("SELECT id, name FROM Brands ORDER BY UPPER(name)");
+
+			psAdd = c.prepareStatement("INSERT INTO Brands (name, descr, link) VALUES (?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS);
+
+			psSet = c.prepareStatement("UPDATE Brands SET name = ?, descr = ?, link = ? WHERE id = ?");
+
+			psCanRemove = c.prepareStatement("SELECT 1 FROM Seeds WHERE brand_id = ?");
+
+			psRemove = c.prepareStatement("DELETE FROM Brands WHERE id = ?");
 
 		} catch (SQLException e) {
 			System.out.println("BrandTables.BrandTables() - " + e);
 		}
 	}
 
+	private void setFieldsLength(Connection c) throws SQLException {
+		Statement s = c.createStatement();
+		ResultSet rs = s.executeQuery("SELECT name, descr, link FROM Brands WHERE 0=1");
+		ResultSetMetaData metaData = rs.getMetaData();
+
+		Brand.setNAME_LENGTH(metaData.getPrecision(1));
+		Brand.setDESCR_LENGTH(metaData.getPrecision(2));
+		Brand.setLINK_LENGTH(metaData.getPrecision(3));
+
+		rs.close();
+		s.close();
+	}
+
 	public ObservableList<Brand> getList() {
 		ObservableList<Brand> list = FXCollections.observableArrayList();
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, name, descr, link FROM Brands");
+		try {
+			ResultSet rs = psList.executeQuery();
 			while (rs.next())
 				list.add(new Brand(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4)));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("BrandTables.getList() - " + e);
 		}
@@ -52,20 +74,16 @@ public class BrandTables extends DBTables {
 		return list;
 	}
 
+	@Override
 	public ObservableList<ComboItem> getListForCombo() {
 		ObservableList<ComboItem> list = FXCollections.observableArrayList();
+		list.add(new ComboItem(0, ""));
 
-		Connection c = getConnection();
-		if (c == null)
-			return list;
-
-		try (Statement s = c.createStatement()) {
-
-			list.add(new ComboItem(0, ""));
-
-			ResultSet rs = s.executeQuery("SELECT id, name FROM Brands ORDER BY UPPER(name)");
+		try {
+			ResultSet rs = psListForCombo.executeQuery();
 			while (rs.next())
 				list.add(new ComboItem(rs.getInt(1), rs.getString(2)));
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("BrandTables.getListForCombo() - " + e);
 		}
@@ -73,87 +91,60 @@ public class BrandTables extends DBTables {
 		return list;
 	}
 
-	public Brand get(int id) {
-		Brand brand = new Brand();
-
-		Connection c = getConnection();
-		if (c == null || id == 0)
-			return brand;
-
-		try (Statement s = c.createStatement()) {
-			ResultSet rs = s.executeQuery("SELECT id, name, descr, link FROM Brands WHERE id = " + id);
-			if (rs.next())
-				brand = new Brand(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
-		} catch (SQLException e) {
-			System.out.println("BrandTables.get(int id) - " + e);
-		}
-
-		return brand;
-	}
-
 	public void add(Brand brand) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps = c.prepareStatement("INSERT INTO Brands (" + " name, descr, link ) VALUES (?, ?, ?)",
-					Statement.RETURN_GENERATED_KEYS);
-			ps.setString(1, brand.getName());
-			ps.setString(2, brand.getDescr());
-			ps.setString(3, brand.getLink());
-			ps.executeUpdate();
+			psAdd.setString(1, brand.getName());
+			psAdd.setString(2, brand.getDescr());
+			psAdd.setString(3, brand.getLink());
+			psAdd.executeUpdate();
 
-			ResultSet rs = ps.getGeneratedKeys();
-			if (rs.next()) {
+			ResultSet rs = psAdd.getGeneratedKeys();
+			if (rs.next())
 				brand.setId(rs.getInt(1));
-			}
-			ps.close();
+			rs.close();
 		} catch (SQLException e) {
 			System.out.println("BrandTables.add(Brand brand) - " + e);
 		}
 	}
 
 	public void set(Brand brand) {
-		Connection c = getConnection();
-		if (c == null)
-			return;
-
 		try {
-			PreparedStatement ps = c
-					.prepareStatement("UPDATE Brands SET " + "  name = ?, descr = ?, link = ? WHERE id = ?");
-			ps.setString(1, brand.getName());
-			ps.setString(2, brand.getDescr());
-			ps.setString(3, brand.getLink());
-			ps.setInt(4, brand.getId());
-			ps.executeUpdate();
+			psSet.setString(1, brand.getName());
+			psSet.setString(2, brand.getDescr());
+			psSet.setString(3, brand.getLink());
+			psSet.setInt(4, brand.getId());
+			psSet.executeUpdate();
 		} catch (SQLException e) {
 			System.out.println("BrandTables.set(Brand brand) - " + e);
 		}
 	}
 
 	public boolean canRemove(Brand brand) {
-		Connection c = getConnection();
-		if (c == null)
-			return false;
+		boolean retValue = false;
 
-		return true;
+		try {
+			psCanRemove.setInt(1, brand.getId());
+			ResultSet rs = psCanRemove.executeQuery();
+			retValue = !rs.next();
+			rs.close();
+		} catch (SQLException e) {
+			System.out.println("BrandTables.canRemove(Brand brand) - " + e);
+		}
+
+		return retValue;
 	}
 
 	public boolean remove(Brand brand) {
-		boolean deleted = false;
+		boolean removed = false;
 
-		Connection c = getConnection();
-		if (c == null)
-			return deleted;
-
-		try (Statement s = c.createStatement()) {
-			s.executeUpdate("DELETE FROM Brands WHERE id = " + brand.getId());
-			deleted = true;
+		try {
+			psRemove.setInt(1, brand.getId());
+			psRemove.executeUpdate();
+			removed = true;
 		} catch (SQLException e) {
 			System.out.println("BrandTables.remove(Brand brand) - " + e);
 		}
 
-		return deleted;
+		return removed;
 	}
 }
